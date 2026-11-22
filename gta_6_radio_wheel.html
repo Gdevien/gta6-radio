@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="GTA 6 Radio" />
+  <meta name="theme-color" content="#0b0614" />
+  <title>GTA VI — Leonida Radio Dial</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23ff2a85'/%3E%3Cstop offset='50%25' stop-color='%23ff8e3c'/%3E%3Cstop offset='100%25' stop-color='%2300f0ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='%230b0614'/%3E%3Ccircle cx='50' cy='50' r='38' fill='none' stroke='url(%23g)' stroke-width='7'/%3E%3Ctext x='50' y='58' font-family='sans-serif' font-weight='900' font-size='30' fill='%23ffffff' text-anchor='middle'%3EVI%3C/text%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --vice-pink: #ff2a85;
+      --vice-cyan: #00f0ff;
+      --vice-gold: #ffb800;
+      --vice-purple: #9d4edd;
+      --bg-deep: #090512;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    input, textarea {
+      user-select: text;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-deep);
+      color: #f8fafc;
+      overflow-x: hidden;
+      min-height: 100dvh;
+      background-image:
+        radial-gradient(circle at 50% 18%, rgba(255, 42, 133, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 85% 75%, rgba(0, 240, 255, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 15% 80%, rgba(255, 184, 0, 0.10) 0%, transparent 45%);
+    }
+
+    .font-vice {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Neon Glows & Glassmorphism */
+    .glass-panel {
+      background: rgba(18, 11, 34, 0.78);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+    }
+
+    .neon-text-pink {
+      text-shadow: 0 0 14px rgba(255, 42, 133, 0.7), 0 0 30px rgba(255, 42, 133, 0.35);
+    }
+
+    .neon-text-cyan {
+      text-shadow: 0 0 14px rgba(0, 240, 255, 0.7), 0 0 28px rgba(0, 240, 255, 0.3);
+    }
+
+    .btn-vice-primary {
+      background: linear-gradient(135deg, #ff2a85 0%, #ff6b35 100%);
+      box-shadow: 0 8px 25px rgba(255, 42, 133, 0.45);
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.16s ease;
+    }
+
+    .btn-vice-primary:active {
+      transform: scale(0.96);
+    }
+
+    .btn-vice-secondary {
+      background: rgba(0, 240, 255, 0.12);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      color: #67f6ff;
+      transition: all 0.16s ease;
+    }
+
+    .btn-vice-secondary:hover {
+      background: rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+    }
+
+    .btn-vice-secondary:active {
+      transform: scale(0.96);
+    }
+
+    /* Radio Wheel Geometry */
+    .wheel-stage {
+      position: relative;
+      width: min(92vw, 410px);
+      height: min(92vw, 410px);
+      margin: 0 auto;
+      touch-action: none;
+    }
+
+    .wheel-ring-outer {
+      position: absolute;
+      inset: 4%;
+      border-radius: 9999px;
+      border: 1.5px dashed rgba(255, 255, 255, 0.12);
+      box-shadow:
+        inset 0 0 40px rgba(255, 42, 133, 0.08),
+        0 0 40px rgba(0, 0, 0, 0.5);
+      pointer-events: none;
+    }
+
+    .wheel-ring-inner {
+      position: absolute;
+      inset: 24%;
+      border-radius: 9999px;
+      background: radial-gradient(circle at 30% 30%, rgba(36, 20, 66, 0.95), rgba(10, 6, 20, 0.98));
+      border: 2px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 0 35px rgba(255, 42, 133, 0.22),
+        inset 0 0 25px rgba(0, 240, 255, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 14px;
+      z-index: 20;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .station-node {
+      position: absolute;
+      width: 42px;
+      height: 42px;
+      margin-left: -21px;
+      margin-top: -21px;
+      border-radius: 9999px;
+      background: rgba(20, 13, 38, 0.92);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      z-index: 15;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.55);
+    }
+
+    @media (min-width: 400px) {
+      .station-node {
+        width: 46px;
+        height: 46px;
+        margin-left: -23px;
+        margin-top: -23px;
+        font-size: 20px;
+      }
+    }
+
+    .station-node:hover {
+      transform: scale(1.16);
+      border-color: rgba(255, 255, 255, 0.5);
+      z-index: 25;
+    }
+
+    .station-node.active {
+      transform: scale(1.32);
+      background: linear-gradient(135deg, rgba(255, 42, 133, 0.95), rgba(157, 78, 221, 0.95));
+      border-color: #00f0ff;
+      box-shadow:
+        0 0 18px rgba(255, 42, 133, 0.85),
+        0 0 32px rgba(0, 240, 255, 0.55);
+      z-index: 30;
+    }
+
+    /* Equalizer Bars Animation */
+    @keyframes eqPulse {
+      0%, 100% { transform: scaleY(0.25); }
+      50% { transform: scaleY(1); }
+    }
+    .eq-bar {
+      transform-origin: bottom;
+      animation: eqPulse 0.85s ease-in-out infinite;
+    }
+    .eq-bar:nth-child(2) { animation-delay: 0.2s; animation-duration: 0.65s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.4s; animation-duration: 0.95s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.15s; animation-duration: 0.75s; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 42, 133, 0.4);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-pink-500 selection:text-white pb-10">
+
+  <!-- Top Navigation / HUD Bar -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-white/10 px-4 py-3">
+    <div class="max-w-3xl mx-auto flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-600 via-orange-500 to-cyan-400 p-[2px] shadow-lg shadow-pink-500/20">
+          <div class="w-full h-full bg-[#0b0614] rounded-[10px] flex items-center justify-center font-vice font-black text-sm tracking-tighter text-white">
+            VI
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <h1 class="font-vice font-extrabold text-sm sm:text-base tracking-wider text-white">LEONIDA RADIO</h1>
+            <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-pink-500/20 text-pink-300 border border-pink-500/30">25 STATIONS</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Tap or drag wheel • 1-tap YouTube Music</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- View Toggle: Wheel vs Grid -->
+        <button id="toggleViewBtn" onclick="toggleViewMode()" title="Switch Wheel / Grid View" class="px-2.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition">
+          <span id="viewIcon">🎛️</span>
+          <span id="viewLabel" class="hidden sm:inline">Grid View</span>
+        </button>
+
+        <!-- Sound FX Toggle -->
+        <button id="muteBtn" onclick="toggleMute()" title="Toggle Radio Static SFX" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 transition">
+          <span id="muteIcon">🔊</span>
+        </button>
+
+        <!-- Custom Links Settings -->
+        <button onclick="openSettings()" title="Custom Playlist Links" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 transition relative">
+          <span>⚙️</span>
+          <span id="customBadgeDot" class="hidden absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-cyan-400"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-3xl mx-auto px-4 pt-4 space-y-5">
+
+    <!-- Toast Notification Banner -->
+    <div id="toastBanner" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl glass-panel border border-cyan-400/40 text-xs sm:text-sm font-medium text-cyan-200 shadow-2xl flex items-center gap-2 transition-all">
+      <span id="toastIcon">📻</span>
+      <span id="toastText">Tuned in</span>
+    </div>
+
+    <!-- SECTION 1: Interactive Radio Wheel View -->
+    <section id="wheelSection" class="py-1">
+      <div class="wheel-stage" id="wheelStage">
+        <!-- Decorative Outer Dial Ring -->
+        <div class="wheel-ring-outer"></div>
+
+        <!-- Radial Pointer Indicator at Top -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-30 pointer-events-none flex flex-col items-center">
+          <div class="w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[10px] border-t-cyan-400 drop-shadow-[0_0_8px_rgba(0,240,255,0.9)]"></div>
+        </div>
+
+        <!-- Station Nodes Container (Injected via JS) -->
+        <div id="wheelNodesContainer" class="absolute inset-0"></div>
+
+        <!-- Center Station Hub Medallion -->
+        <div class="wheel-ring-inner" id="centerHub">
+          <div class="flex items-center gap-1 mb-1">
+            <span id="centerFreq" class="text-[10px] font-vice font-bold tracking-widest uppercase text-cyan-300">98.3 FM</span>
+            <span id="centerTag" class="hidden text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30">SECRET</span>
+          </div>
+          <div id="centerEmoji" class="text-3xl sm:text-4xl mb-1 drop-shadow-[0_0_12px_rgba(255,255,255,0.4)]">🌴</div>
+          <h2 id="centerName" class="font-vice font-black text-xs sm:text-sm leading-tight text-white line-clamp-2 px-1">FLASH FM</h2>
+          <p id="centerCount" class="text-[10px] text-pink-300 font-semibold mt-1">89 TRACKS</p>
+          <!-- Mini Equalizer -->
+          <div class="flex items-end justify-center gap-1 h-3 mt-1.5 opacity-80">
+            <span class="eq-bar w-1 h-full bg-pink-500 rounded-full"></span>
+            <span class="eq-bar w-1 h-full bg-cyan-400 rounded-full"></span>
+            <span class="eq-bar w-1 h-full bg-amber-400 rounded-full"></span>
+            <span class="eq-bar w-1 h-full bg-pink-500 rounded-full"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Prev / Next Dial Stepper for Easy One-Handed Use -->
+      <div class="flex items-center justify-center gap-3 mt-2">
+        <button onclick="stepStation(-1)" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-1.5 transition">
+          <span>◀</span> Prev Dial
+        </button>
+        <span class="text-[11px] text-slate-400 font-medium">Drag wheel or tap icon</span>
+        <button onclick="stepStation(1)" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-1.5 transition">
+          Next Dial <span>▶</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 1B: Quick Grid View (Hidden by Default, Toggled via Top Button) -->
+    <section id="gridSection" class="hidden">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="stationGridContainer"></div>
+    </section>
+
+    <!-- SECTION 2: Active Station Console & YouTube Music Launchers -->
+    <section class="glass-panel rounded-3xl p-5 space-y-4 relative overflow-hidden">
+      <!-- Subtle Accent Glow Bar -->
+      <div id="stationAccentBar" class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 via-amber-400 to-cyan-400"></div>
+
+      <div class="flex items-start justify-between gap-3">
+        <div class="space-y-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="hudBadge" class="text-[10px] font-vice font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">POP / DANCE</span>
+            <span id="hudSpecialTag" class="hidden text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">SECRET STATION</span>
+            <span id="hudCustomLinked" class="hidden text-[10px] font-bold uppercase px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ CUSTOM PLAYLIST LINKED</span>
+          </div>
+          <h2 id="hudTitle" class="font-vice font-black text-xl sm:text-2xl text-white tracking-wide">Flash FM</h2>
+          <p id="hudHosts" class="text-xs font-semibold text-pink-300">🎙️ Hosts: Robyn & Alex</p>
+        </div>
+        <div id="hudEmojiBox" class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl shrink-0">
+          🌴
+        </div>
+      </div>
+
+      <p id="hudDesc" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+        The Vice City institution that delivers the best in pop music with Robyn and Alex from Flash FM — guaranteed to make you dance no matter where you find yourself in the Goodtime State.
+      </p>
+
+      <!-- Primary YouTube Music Action Buttons -->
+      <div id="musicActionsArea" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+        <button onclick="openStationOnYTMusic()" class="btn-vice-primary w-full py-3.5 px-4 rounded-2xl font-bold text-sm text-white flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          <span id="primaryBtnLabel">Play Station on YouTube Music</span>
+        </button>
+
+        <button id="randomTrackBtn" onclick="playRandomTrackOnYTMusic()" class="btn-vice-secondary w-full py-3.5 px-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer">
+          <span>🎲</span>
+          <span>Shuffle Random Song</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Full Station Tracklist Browser -->
+    <section id="tracklistSection" class="glass-panel rounded-3xl p-5 space-y-3.5">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div>
+          <h3 class="font-vice font-bold text-sm sm:text-base text-white flex items-center gap-2">
+            <span>TRACKLIST</span>
+            <span id="tracklistCountBadge" class="text-xs font-sans font-bold px-2 py-0.5 rounded-full bg-white/10 text-pink-300">89</span>
+          </h3>
+          <p class="text-[11px] text-slate-400">Tap any song to play it directly in YouTube Music</p>
+        </div>
+
+        <!-- Track Search Input -->
+        <div class="relative w-full sm:w-60">
+          <input
+            type="text"
+            id="trackSearchInput"
+            oninput="renderTracklist()"
+            placeholder="Filter artist or song..."
+            class="w-full bg-black/40 border border-white/15 focus:border-cyan-400 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-slate-400 outline-none transition"
+          />
+          <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+        </div>
+      </div>
+
+      <!-- Track Items Container -->
+      <div id="tracklistContainer" class="divide-y divide-white/5 max-h-[430px] overflow-y-auto pr-1 space-y-1">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS MODAL: Optional Custom YouTube Music Playlist Links -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-panel rounded-3xl w-full max-w-xl max-h-[88dvh] flex flex-col border border-white/15 overflow-hidden">
+      <div class="p-5 border-b border-white/10 flex items-center justify-between">
+        <div>
+          <h3 class="font-vice font-extrabold text-base sm:text-lg text-white">CUSTOM PLAYLIST LINKS</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Optional: Paste your personal YouTube Music playlist URLs below. Leave blank to auto-search.</p>
+        </div>
+        <button onclick="closeSettings()" class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div id="settingsListContainer" class="p-5 overflow-y-auto space-y-3 flex-1">
+        <!-- Station URL Inputs injected via JS -->
+      </div>
+
+      <div class="p-4 border-t border-white/10 bg-black/30 flex flex-wrap items-center justify-between gap-2">
+        <button onclick="clearAllCustomLinks()" class="px-3 py-2 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-xs font-semibold text-red-300">
+          Reset All
+        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="closeSettings()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs font-semibold text-slate-200">
+            Cancel
+          </button>
+          <button onclick="saveCustomLinks()" class="btn-vice-primary px-5 py-2 rounded-xl text-xs font-bold text-white">
+            Save Links
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // COMPLETE GTA 6 RADIO STATIONS & FULL TRACKLIST DATABASE
+    // =========================================================================
+    const STATIONS = [
+      {
+        id: "flash-fm",
+        name: "Flash FM",
+        freq: "95.5 FM",
+        genre: "Pop & Dance",
+        emoji: "🌴",
+        hosts: "Robyn & Alex",
+        description: "The Vice City institution that delivers the best in pop music with Robyn and Alex from Flash FM — guaranteed to make you dance no matter where you find yourself in the Goodtime State.",
+        tracks: [
+          "Addison Rae – “Fame Is a Gun”",
+          "Adéla – “Ain’t in LA”",
+          "Aluna & Jayda G – “Mine O’ Mine”",
+          "Ariana Grande – “Break Free” (feat. Zedd)",
+          "Billie Eilish – “LUNCH”",
+          "Booty Luv – “Shine”",
+          "Britney Spears – “Gimme More”",
+          "Brittany Howard – “Prove It To You”",
+          "CA7RIEL & Paco Amoroso, PinkPantheress, Fred again.. & Etienne de Crécy – “Sexy Magic”",
+          "Calvin Harris – “Feels” (feat. Pharrell Williams, Katy Perry & Big Sean)",
+          "CamelPhat & Elderbrook – “Cola”",
+          "Camila Cabello – “Havana” (feat. Young Thug)",
+          "Camila Cabello – “Sweet Like Candy”",
+          "Carly Rae Jepsen – “Run Away With Me”",
+          "Chappell Roan – “HOT TO GO!”",
+          "Charli XCX – “Good Ones”",
+          "chloe moriondo – “oyster”",
+          "Ciara – “Love Sex Magic” (feat. Justin Timberlake)",
+          "Coldplay – “Adventure of a Lifetime”",
+          "Daft Punk – “Around the World”",
+          "Disclosure – “Jaded”",
+          "Doechii & SZA – “Persuasive”",
+          "Drake – “Hold On, We’re Going Home” (feat. Majid Jordan)",
+          "Dua Lipa – “Go Easy”",
+          "Dua Lipa – “Houdini”",
+          "Echosmith – “Cool Kids”",
+          "Ella Langley – “Be Her”",
+          "Foster the People – “Pumped Up Kicks”",
+          "Frank Ocean – “Lost”",
+          "Garbage – “Only Happy When It Rains”",
+          "George Michael – “Fastlove, Pt. 1”",
+          "Goldfrapp – “Strict Machine”",
+          "Gorillaz – “DARE” (feat. Shaun Ryder & Roses Gabor)",
+          "Gwen Stefani – “Rich Girl” (feat. Eve)",
+          "Gwen Stefani – “What You Waiting For?”",
+          "Jeannie – “Mantra”",
+          "JENNIE – “Power Trip”",
+          "Jennifer Paige – “Crush”",
+          "Jessie Murph & Jelly Roll – “Wild Ones”",
+          "JISOO – “earthquake”",
+          "Justice – “DVNO”",
+          "Justin Bieber – “Friends” (feat. BloodPop®)",
+          "Justin Bieber – “SWEET SPOT” (feat. Sexyy Red)",
+          "KATSEYE – “Gabriela”",
+          "Kele – “Tenderoni”",
+          "Kelly Rowland – “Motivation” (feat. Lil Wayne)",
+          "Kenya Grace – “Mr. Cool”",
+          "Kevin Lyttle – “Turn Me On”",
+          "Kodak Black – “Skrilla”",
+          "Kylie Minogue – “Spinning Around”",
+          "La Roux – “Bulletproof”",
+          "Lana Del Rey – “Crazy For You”",
+          "LISA – “Sawadika”",
+          "Lorde – “Green Light”",
+          "Madonna – “Give Me All Your Luvin'” (feat. Nicki Minaj & M.I.A.)",
+          "Major Lazer, DJ Snake & MØ – “Lean On”",
+          "Mandy Moore – “Candy”",
+          "Mariah Carey – “Someday”",
+          "MGMT – “Electric Feel”",
+          "Moloko – “Forever More”",
+          "Morgan Wallen – “Last Thing You Need”",
+          "Natasha Bedingfield – “Unwritten”",
+          "Ol’ Dirty Bastard & Kelis – “Got Your Money”",
+          "Olivia Rodrigo – “good 4 u”",
+          "Phoenix – “1901”",
+          "PinkPantheress – “Illegal”",
+          "Prospa – “So Hot” (feat. Halsey)",
+          "Rihanna – “Only Girl (In the World)”",
+          "Rina Sawayama – “TRDWFE”",
+          "Robyn – “Show Me Love”",
+          "Robyn, CA7RIEL & Paco Amoroso – “Blow My Mind (CA7RIEL & Paco Amoroso Version)”",
+          "Rose Gray – “All Again”",
+          "Sam Fender – “People Watching”",
+          "Santigold – “Disparate Youth”",
+          "Sia – “Cheap Thrills”",
+          "Slayyyter – “DANCE…”",
+          "Tate McRae – “Sports Car”",
+          "Texas – “Inner Smile”",
+          "The Black Keys – “No Rain, No Flowers”",
+          "The Ting Tings – “That’s Not My Name”",
+          "The Weeknd – “Wanderlust”",
+          "Tove Lo – “Blood In Your Eyes”",
+          "Tove Lo & SG Lewis – “HEAT”",
+          "TSHA & Rose Gray – “Girls”",
+          "U2 – “Lemon”",
+          "Usher – “DJ Got Us Fallin’ In Love” (feat. Pitbull)",
+          "X-Press 2 – “Lazy” (feat. David Byrne)",
+          "Xpansions – “Move Your Body”",
+          "Zara Larsson – “Fast Emotion”",
+          "Zara Larsson & PinkPantheress – “Midnight Sun (Girls Trip)”"
+        ]
+      },
+      {
+        id: "vice-city-rap",
+        name: "Vice City Rap Radio",
+        freq: "101.9 FM",
+        genre: "Contemporary Hip-Hop",
+        emoji: "💎",
+        hosts: "DJ JT, DJ Stevie, Charlamagne & Ivy (Early AF)",
+        description: "A contemporary rap station featuring chart hits and new hip-hop releases curated with help of KrishnaMusic.",
+        tracks: [
+          "21 Savage – “Cookin” *",
+          "310babii – “Soak City” (feat. Mustard, Tyga, Blueface, OhGeesy & BlueBucksClan)",
+          "A Boogie Wit da Hoodie – “Dance With Me” (feat. elkan)",
+          "A$AP Rocky – “FLACKITO JODYE” (feat. Tokischa)",
+          "ATL Jacob – “I’m A Monster”",
+          "Baby Bash – “Cyclone” (feat. T-Pain)",
+          "Belly Gang Kushington – “Friend Do Remix” (feat. YKNiece)",
+          "Bodega Flee – “Dale” (feat. Chucky73 & DGLO73)",
+          "Boosie Badazz – “Wipe Me Down (Remix)” (feat. Foxx, Webbie & Lil Boosie)",
+          "BossMan Dlow – “Left Wrist”",
+          "BossMan Dlow – “Mr. Pot Scraper”",
+          "BossMan Dlow – “Shake Dat Ass (Twerk Song)”",
+          "BunnaB – “Go Go Go”",
+          "Cardi B – “Don’t Chart”",
+          "Cardi B – “Outside”",
+          "Cardi B – “Up”",
+          "Central Cee – “Rock N Roll” *",
+          "Central Cee & Lil Baby – “BAND4BAND”",
+          "Chief Keef – “Faneto”",
+          "Coi Leray – “Players”",
+          "Denzel Curry – “FLA Flow” (feat. 454) *",
+          "DJ Khaled – “BILLS PAID” (feat. Latto & City Girls)",
+          "Don Toliver – “TF?”",
+          "Drake – “NOKIA”",
+          "Drake – “Nonstop”",
+          "Famous Sally & YB – “Wassup Gway”",
+          "French Montana & Swae Lee – “Unforgettable”",
+          "Future – “712PM”",
+          "Future – “Xanny Family”",
+          "Future & Metro Boomin – “Fried (She a Vibe)”",
+          "Future & Young Thug – “All da Smoke”",
+          "Future, Metro Boomin, Travis Scott & Playboi Carti – “Type Shit”",
+          "GloRilla – “TGIF”",
+          "GloRilla & Sexyy Red – “WHATCHU KNOW ABOUT ME”",
+          "Gunna – “COUNT UP”",
+          "HXG – “RCKSTRL!VING” (feat. Tana & Quavo) *",
+          "Icewear Vezzo – “Back On The Road”",
+          "Jeezy – “All There” (feat. Bankroll Fresh)",
+          "JT – “GMA”",
+          "Key Glock – “DUMMY (Prod. Tay Keith)”",
+          "Key Glock & Tay Keith – “Maybach Coupe”",
+          "Khia – “My Neck, My Back (Lick It)”",
+          "Kodak Black – “No Flockin’”",
+          "Kodak Black – “Roll in Peace” (feat. XXXTENTACION)",
+          "Kodak Black – “Skrilla”",
+          "Kodak Black – “Super Gremlin”",
+          "Kodak Black & Don Toliver – “Let’s Rock”",
+          "Latto – “50 Bands” (feat. Flo Milli)",
+          "Latto – “Big Mama (2nd Half Only)”",
+          "Latto – “Brokey”",
+          "Lil Baby & Moneybagg Yo – “No Sucker”",
+          "Lil Baby, Young Thug & Future – “Dum, Dumb, and Dumber”",
+          "Lil Uzi Vert – “Just Wanna Rock”",
+          "Lil Wayne, Drake & Future – “Love Me”",
+          "Liro 100 – “Bitcoin”",
+          "Lomiiel – “PA QUE LO BAILES (BAILALO ROCKY)”",
+          "Meek Mill – “Dreams and Nightmares”",
+          "Migos – “Bad and Boujee” (feat. Lil Uzi Vert)",
+          "Migos – “T-Shirt”",
+          "Moreno ITF – “ROBOCOP”",
+          "Mustard – “One of Them Ones” (feat. Quavo & Rob49)",
+          "Nemzzz – “GASS” (feat. Travis Scott)",
+          "Offset – “I Just Came to Pop It” *",
+          "Playboi Carti – “AHH YEA”",
+          "PLUTO & YKNIECE – “WHIM WHAMIEE”",
+          "Pooh Shiesty – “7.62 God”",
+          "Pooh Shiesty – “Got Dat” *",
+          "Pop Smoke – “Dior”",
+          "Real Boston Richey – “Help Me”",
+          "Rick Ross – “B.M.F. (Blowin’ Money Fast)” (feat. Styles P)",
+          "Rick Ross – “Hustlin'”",
+          "RushDee, ATL Jacob & Big Boss Vette – “Boss Shit”",
+          "Sexyy Red – “Hoochie Coochie”",
+          "Sexyy Red – “SkeeYee”",
+          "Sexyy Red & Tay Keith – “Pound Town”",
+          "Sheck Wes – “Mo Bamba”",
+          "SoFaygo – “CASHOUT” *",
+          "Soulja Boy & French Montana – “She Make It Clap (Remix)”",
+          "Stevie J – “OFF MY CHEST”",
+          "Tee Grizzley – “IKYFL”",
+          "Travis Scott – “RHYNO”",
+          "Travis Scott – “SICKO MODE”",
+          "Travis Scott & Playboi Carti – “FE!N”",
+          "Travis Scott & SoFaygo – “CONTEST”",
+          "Trick Daddy – “Can’t Fuck wit Me”",
+          "Waka Flocka Flame – “O Let’s Do It” (feat. Cap)",
+          "Yo Gotti & Nicki Minaj – “Rake It Up”",
+          "Young Nudy – “Don Da Da” *",
+          "Young Thug – “Digits”",
+          "Young Thug – “WAKIN UP FLEX”",
+          "Yung Lean – “That’s It” (feat. Future & Metro Boomin)",
+          "Zoey Dollaz – “Blow a Check”"
+        ]
+      },
+      {
+        id: "cocoteo-fm",
+        name: "Cocoteo FM",
+        freq: "103.5 FM",
+        genre: "Reggaeton & Latin Urban",
+        emoji: "🔥",
+        hosts: "El Martillo (Bad Bunny) & La Gata (RaiNao)",
+        description: "Cocoteo FM is Leonida’s home for the best of modern Latin music. Hosted by El Martillo and La Gata and featuring everything from bachata and merengue to dembow and reggaeton.",
+        tracks: [
+          "Anuel AA – “Amanece” (feat. Haze)",
+          "Arca – “Sandunguea”",
+          "Axel Rulay – “Si Es Trucho Es Trucho (Remix)” (feat. Farruko & El Alfa)",
+          "Bad Bunny – “EoO”",
+          "Bad Bunny – “Otra Noche en Miami”",
+          "Bb Trickz – “Malvada”",
+          "CA7RIEL & Paco Amoroso – “Dumbai”",
+          "Calle 13 – “Suave Mix (Blass Remix)”",
+          "Chimbala & Omega – “Se Me Nota (Agárrame)”",
+          "Don Omar – “Intocable”",
+          "El Alfa, CJ, Chael Produciendo & El Cherry Scom – “La Mamá de la Mamá”",
+          "Elvis Crespo – “Nuestra Canción”",
+          "Farruko – “Pepas”",
+          "FEID – “CHORRITO PA LAS ANIMAS”",
+          "Fuerza Regida – “Suzuki”",
+          "Jhayco – “X”",
+          "Judeline – “Besito”",
+          "Kali Uchis & Helado Negro – “Largate”",
+          "KAROL G & Mariah Angeliq – “EL MAKINON”",
+          "Latin Mafia & Omar Apollo – “Hecho para ti”",
+          "MJ Nebreda – “La Pari”",
+          "Myke Towers – “Girl”",
+          "RaiNao & El Laberinto del Coco – “Mariposas en el Estómago”",
+          "Rauw Alejandro – “Macacoa 2000”",
+          "Romeo Santos – “Canalla” (feat. El Chaval de la Bachata)",
+          "ROSALÍA – “CANDY”",
+          "Slow Jamz – “Sin Dormir”",
+          "Tainy & Bad Bunny – “Mojabi Ghost”",
+          "Tokischa & Bulin 47 – “CELOS”",
+          "Young Miko – “Ni Le Cabe”"
+        ]
+      },
+      {
+        id: "v-rock",
+        name: "V-Rock",
+        freq: "105.9 FM",
+        genre: "Classic & Hard Rock",
+        emoji: "🦅",
+        hosts: "The Buck (Lindsey Buckingham) & Skipper McD (Michael McDonald)",
+        description: "The returning Vice City rock station, now featuring a broad selection of classic rock and hard rock. Its vulture mascot and branding also appear on Jason’s clothing.",
+        tracks: [
+          "38 Special – “Rockin’ Into The Night”",
+          "AC/DC – “Sin City”",
+          "Aerosmith – “Livin’ On The Edge”",
+          "April Wine – “Roller”",
+          "Bad Company – “Rock ‘N’ Roll Fantasy”",
+          "Billy Squier – “Everybody Wants You”",
+          "Blue Öyster Cult – “Shooting Shark”",
+          "Bob Seger – “Shakedown”",
+          "Bon Jovi – “Runaway”",
+          "Christopher Cross – “Ride Like the Wind”",
+          "David Lee Roth – “Just Like Paradise”",
+          "Def Leppard – “Comin’ Under Fire”",
+          "Def Leppard – “Pour Some Sugar On Me”",
+          "Dire Straits – “Money For Nothing”",
+          "Eddie Money – “Take Me Home Tonight”",
+          "Eric Clapton – “Bad Love”",
+          "Eric Clapton – “Cocaine”",
+          "Fleetwood Mac – “Big Love”",
+          "Foreigner – “Urgent”",
+          "Gerry Rafferty – “Get It Right Next Time”",
+          "Gerry Rafferty – “Right Down the Line”",
+          "Gino Vannelli – “Black Cars”",
+          "Harry Nilsson – “Jump into the Fire”",
+          "Huey Lewis & The News – “I Want a New Drug”",
+          "Jane’s Addiction – “Had a Dad”",
+          "Jay Ferguson – “Thunder Island”",
+          "Jefferson Starship – “Find Your Way Back”",
+          "John Mellencamp – “Jack & Diane”",
+          "John Parr – “Naughty Naughty”",
+          "Kenny Loggins – “Heart To Heart”",
+          "Kiss – “Sure Know Something”",
+          "Lindsey Buckingham – “Go Insane”",
+          "Loverboy – “Lovin’ Every Minute of It”",
+          "Michael McDonald – “I Gotta Try”",
+          "Mötley Crüe – “Dr. Feelgood”",
+          "Pete Townshend – “Let My Love Open The Door”",
+          "Poison – “Nothin’ But A Good Time”",
+          "Queen – “Hammer To Fall”",
+          "Red Rider – “Lunatic Fringe”",
+          "REO Speedwagon – “Take It On the Run”",
+          "Stephen Stills – “Love the One You’re With”",
+          "Stephen Stills – “Stranger”",
+          "Steve Winwood – “Freedom Overspill”",
+          "Stevie Nicks – “For What It’s Worth”",
+          "Stevie Nicks – “Rooms on Fire”",
+          "Styx – “Too Much Time On My Hands”",
+          "The Clash – “Rock The Casbah”",
+          "The Doobie Brothers – “Takin’ It to the Streets”",
+          "The Kinks – “Living On A Thin Line”",
+          "The Police – “Driven To Tears”",
+          "The Rolling Stones – “Emotional Rescue”",
+          "The Romantics – “Talking In Your Sleep”",
+          "The Steve Miller Band – “Take The Money And Run”",
+          "The Who – “Bargain”",
+          "Tina Turner – “Better Be Good to Me”",
+          "Todd Rundgren – “I Saw the Light”",
+          "Tom Petty – “Between Two Worlds”",
+          "Tom Petty – “Dogs on the Run”",
+          "Tom Petty – “Love Is A Long Road”",
+          "Tom Petty – “The Damage You’ve Done”",
+          "Tom Petty – “The Wild One, Forever”",
+          "Tom Petty – “Wildflowers”",
+          "Tom Petty – “You Wreck Me”",
+          "Toto – “Georgy Porgy”",
+          "U2 – “The Unforgettable Fire”",
+          "Van Halen – “Panama”",
+          "Warrant – “Cherry Pie”",
+          "Warren Zevon – “Lawyers, Guns and Money”",
+          "Whitesnake – “Give Me All Your Love”",
+          "Yes – “Rhythm of Love”",
+          "ZZ Top – “Got Me Under Pressure”"
+        ]
+      },
+      {
+        id: "vice-city-fm",
+        name: "Vice City FM",
+        freq: "88.1 FM",
+        genre: "1980s Pop & New Wave",
+        emoji: "🕶️",
+        hosts: "DJ Al (“Weird Al” Yankovic) & Madame Brigitte",
+        description: "A station specializing in 1980s pop, first spotted in promotional material before the game’s release.",
+        tracks: [
+          "A Flock Of Seagulls – “Wishing (If I Had a Photograph of You)”",
+          "ABC – “Vanity Kills”",
+          "Alexander O’Neal – “Fake”",
+          "Belouis Some – “Imagination”",
+          "Big Audio Dynamite – “E = MC2”",
+          "Billy Idol – “Flesh For Fantasy”",
+          "Billy Ocean – “Loverboy”",
+          "Blancmange – “Don’t Tell Me”",
+          "Bryan Ferry – “Kiss and Tell”",
+          "Change – “Searching”",
+          "China Crisis – “Working With Fire And Steel”",
+          "Culture Club – “Miss Me Blind”",
+          "Curiosity Killed The Cat – “Name and Number”",
+          "Daryl Hall & John Oates – “Crime Pays”",
+          "Depeche Mode – “People Are People”",
+          "Donna Summer – “She Works Hard For The Money”",
+          "Donna Summer – “State of Independence”",
+          "Echo & the Bunnymen – “Lips Like Sugar”",
+          "Elton John – “Kiss The Bride”",
+          "Erasure – “Sometimes”",
+          "Feargal Sharkey – “A Good Heart”",
+          "Fine Young Cannibals – “Good Thing”",
+          "Fox The Fox – “Precious Little Diamond”",
+          "Genesis – “Land Of Confusion”",
+          "Howard Jones – “Things Can Only Get Better”",
+          "Information Society – “What’s On Your Mind (Pure Energy)”",
+          "Jellybean – “Who Found Who” (feat. Elisa Fiorillo)",
+          "Jermaine Stewart – “We Don’t Have To Take Our Clothes Off”",
+          "Joe Jackson – “Steppin’ Out”",
+          "Johnny Hates Jazz – “Shattered Dreams”",
+          "Kano – “Another Life”",
+          "Kenny Loggins – “I’m Alright”",
+          "Laid Back – “Bakerman”",
+          "Laid Back – “White Horse”",
+          "Lionel Richie – “All Night Long (All Night)”",
+          "Lionel Richie – “Dancing On The Ceiling”",
+          "Living In A Box – “Blow the House Down”",
+          "Matthew Wilder – “Break My Stride”",
+          "Miami Sound Machine – “Dr. Beat”",
+          "Missing Persons – “Words”",
+          "Naked Eyes – “When The Lights Go Out”",
+          "New Order – “Thieves Like Us”",
+          "Orchestral Manoeuvres in the Dark – “If You Leave”",
+          "Prefab Sprout – “Cars and Girls”",
+          "Propaganda – “Duel (Bittersweet) The Third Side Face To Face”",
+          "Red 7 – “Heartbeat”",
+          "Robert Palmer – “I Didn’t Mean To Turn You On”",
+          "Rod Stewart – “Infatuation”",
+          "Simple Minds – “Alive and Kicking”",
+          "Simple Minds – “Love Song”",
+          "Simply Red – “Money’s Too Tight (To Mention)”",
+          "Stanley Clarke & George Duke – “Winners”",
+          "Steve Winwood – “Valerie”",
+          "Stevie Nicks – “Wild Heart”",
+          "Sting – “If You Love Somebody Set Them Free”",
+          "Talk Talk – “Talk Talk”",
+          "Tears For Fears – “Head Over Heels”",
+          "The Cars – “You Might Think”",
+          "The Cure – “Just Like Heaven”",
+          "The Flirts – “Passion”",
+          "The Motels – “Suddenly Last Summer”",
+          "The Pointer Sisters – “Hot Together”",
+          "The Pointer Sisters – “Neutron Dance”",
+          "The Police – “Walking On The Moon”",
+          "The Sisters Of Mercy – “Lucretia My Reflection”",
+          "The The – “This Is the Day”",
+          "The Thompson Twins – “Love On Your Side”",
+          "Tina Turner – “Steamy Windows”",
+          "Tina Turner – “We Don’t Need Another Hero (Thunderdome)”",
+          "Wang Chung – “Everybody Have Fun Tonight”",
+          "Wax – “Bridge To Your Heart”"
+        ]
+      },
+      {
+        id: "emotion-98-3",
+        name: "Emotion 98.3",
+        freq: "98.3 FM",
+        genre: "Soft Rock & Power Ballads",
+        emoji: "💔",
+        hosts: "Doug Van Dyke (Doug Stanhope)",
+        description: "A returning Vice City station devoted to soft rock and easy-listening songs, including music from the 1970s and 1980s.",
+        tracks: [
+          "Ace – “How Long”",
+          "Air Supply – “All Out of Love”",
+          "Bruce Hornsby And The Range – “The Way It Is”",
+          "Captain & Tennille – “But I Think It’s A Dream”",
+          "Carly Simon – “Coming Around Again”",
+          "Cheap Trick – “The Flame”",
+          "Chicago – “Hard to Say I’m Sorry / Get Away”",
+          "Chris Isaak – “Lie To Me”",
+          "Chris Rea – “Fool (If You Think It’s Over)”",
+          "Cliff Richard – “Devil Woman”",
+          "Def Leppard – “Love Bites”",
+          "Double – “The Captain of Her Heart”",
+          "Dr. Hook – “When You’re in Love With a Beautiful Woman”",
+          "Elton John – “I Guess That’s Why They Call It The Blues”",
+          "Eric Carmen – “All By Myself”",
+          "Exile – “Kiss You All Over”",
+          "Gary Wright – “Dream Weaver”",
+          "Genesis – “Tonight, Tonight, Tonight”",
+          "George Michael – “Father Figure”",
+          "Heart – “Alone”",
+          "Juice Newton – “Angel Of The Morning”",
+          "Lindsey Buckingham – “Trouble”",
+          "Patti Labelle & Michael McDonald – “On My Own”",
+          "Phil Collins – “Against All Odds (Take a Look at Me Now)”",
+          "Phil Collins – “In the Air Tonight”",
+          "Robert Plant – “In The Mood”",
+          "Ronnie Milsap – “Stranger In My House”",
+          "Roxette – “Listen to Your Heart”",
+          "Russ Ballard – “Voices”",
+          "Scritti Politti – “Overnite”",
+          "Stevie Nicks – “Stop Draggin’ My Heart Around” (feat. Tom Petty and the Heartbreakers)",
+          "The Cars – “Drive”",
+          "The Doobie Brothers – “It Keeps You Runnin'”",
+          "The Walker Brothers – “No Regrets”",
+          "Will to Power – “Baby, I Love Your Way / Freebird”"
+        ]
+      },
+      {
+        id: "dirty-south-classics",
+        name: "Dirty South Classics",
+        freq: "99.1 FM",
+        genre: "Southern Hip-Hop Classics",
+        emoji: "🐊",
+        hosts: "Trina, Trick Daddy & Gucci Mane (The Tap In)",
+        description: "A little southern hospitality from Trick and Trina, blasting regional rap and hip-hop classics with Dirty South Classics. From the beach to the block, nobody reps Leonida and the South like they do.",
+        tracks: [
+          "2 Chainz – “No Lie” (feat. Drake)",
+          "2Pac – “Still Ballin’ (Nitty Remix)” (feat. Trick Daddy)",
+          "B.G. – “Bling Bling” (feat. Hot Boys & Big Tymers)",
+          "Big Tymers, Juvenile & Lil Wayne – “#1 Stunna”",
+          "Birdman – “Pop Bottles” (feat. Lil Wayne)",
+          "Brisco – “Bitch I’m Me”",
+          "Chingy – “Holidae In” (feat. Ludacris & Snoop Dogg)",
+          "Choppa Style – “Choppa Style” (feat. Master P)",
+          "Crime Mob – “Knuck If You Buck” (feat. Lil Scrappy)",
+          "David Banner – “Like a Pimp” (feat. Lil’ Flip)",
+          "Dem Franchize Boyz – “White Tee”",
+          "DJ Khaled – “Born N Raised” (feat. Trick Daddy, Rick Ross & Pitbull)",
+          "Gang Starr – “Step In The Arena”",
+          "Gangsta Boo – “Where Dem Dollas At” (feat. DJ Paul & Juicy J)",
+          "Geto Boys – “Damn It Feels Good to Be a Gangsta”",
+          "Gorilla Zoe, Gucci Mane & OJ da Juiceman – “HelluvaLife”",
+          "Gucci Mane – “Freaky Girl”",
+          "Gucci Mane – “Lemonade”",
+          "JAŸ-Z & UGK – “Big Pimpin'”",
+          "Jeezy & JAŸ-Z – “Seen It All”",
+          "JT Money – “Who Dat” (feat. Solé)",
+          "Juvenile – “Slow Motion” (feat. Soulja Slim)",
+          "Kodak Black – “Skrilla”",
+          "Lil Jon & the Eastside Boyz – “What U Gon’ Do” (feat. Lil Scrappy)",
+          "Lil Wayne – “A Milli”",
+          "Mike Jones – “Back Then”",
+          "Outkast – “Player’s Ball”",
+          "Petey Pablo – “Freek-a-Leek”",
+          "Rick Ross – “Hustlin'”",
+          "Rick Ross – “Push It”",
+          "Shawty Lo – “Dey Know”",
+          "T.I. – “Rubber Band Man”",
+          "Three 6 Mafia – “Hard Out Here for a Pimp” (feat. Paula Campbell)",
+          "Three 6 Mafia – “Side 2 Side”",
+          "Trick Daddy – “I’m a Thug”",
+          "Trina – “Da Baddest Bitch”",
+          "Ying Yang Twins & Trick Daddy – “What’s Happenin!”",
+          "Young Buck – “Shorty Wanna Ride”",
+          "Young Joc – “It’s Goin’ Down” (feat. Nitti)"
+        ]
+      },
+      {
+        id: "afrobank-fm",
+        name: "AfroBank FM",
+        freq: "92.7 FM",
+        genre: "Afrobeats & Amapiano",
+        emoji: "🌍",
+        hosts: "Burna (Burna Boy) & Palmsy (Jay Donaldson)",
+        description: "Turn up the gbedu with Burna and Palmsy, AfroBank FM’s dynamic duo curating the best in African music, from 20th century classics and undiscovered gems to contemporary sounds like amapiano, 3-step, and more.",
+        tracks: [
+          "Alafia – “Assanssan”",
+          "Alaska – “Accuse”",
+          "Asake – “Joha”",
+          "Ayra Starr – “SEX BILLS BASS THRILLS” *",
+          "Balcony Mix Africa, Lady Du, Focalistic, Major League DJz, LuuDadeejay, Aunty Gelato – “Government”",
+          "Burna Boy – “Bigger”",
+          "Burna Boy – “Giza” (feat. Seyi Vibez)",
+          "Ciza, Jazzwrld, Thukuthela – “Isaka (6am)”",
+          "De Mogul Sa – “Oe Batla Kae” (feat. Ms Mo & Makhensa)",
+          "DJ Lag, Robot Boii, Kamo Mphela – “Shay’sana”",
+          "DopeNation – “Kakalika”",
+          "Eparapo, Dele Sosimi, Bayaka (IT) – “From London to Lagos (Bayaka Remix)”",
+          "Fireboy DML – “YAWA”",
+          "Hugh Masekela – “Run No More (A Vuo Mo)”",
+          "Kiki Gyan – “Keep On Dancing”",
+          "Manu Dibango – “Goro City”",
+          "NO11 & Ayjay bobo – “HOW FAR” (feat. Monochrome) *",
+          "Ntombi Ndaba – “Tomorrow”",
+          "Ofege – “Burning Jungle”",
+          "Omah Lay – “Holy Ghost”",
+          "Orlando Julius – “Disco Hi-Life”",
+          "Oumou Sangaré – “Sarama”",
+          "Pat Thomas, Ebo Taylor – “Gye Wani”",
+          "Penny Penny – “Milandu Bhe (Dr Moruti Remix)”",
+          "Phyno & Burna Boy – “Do I (Remix)”",
+          "Souley Kanté – “Bi Magni”",
+          "Tony Allen & The Afro Messengers – “No Discrimination”",
+          "Uncle Waffles – “Wadibusa” (feat. Royal MusiQ, OHP Sage, Pcee)",
+          "William Onyeabor – “Fantastic Man”",
+          "Yoruba Singers – “Black Pepper”",
+          "Zaylevelten – “Guap Up”"
+        ]
+      },
+      {
+        id: "honey-fm",
+        name: "Honey FM",
+        freq: "96.9 FM",
+        genre: "90s R&B, Soul & Liquid City",
+        emoji: "🍯",
+        hosts: "Chilli, T-Boz & Liquid Wilson (Craig Robinson)",
+        description: "A station playing 1990s R&B and soul, alongside related hits from other decades and Liquid City original jams.",
+        tracks: [
+          "112 – “Dance With Me”",
+          "Akon – “Locked Up” (feat. Styles P)",
+          "Anita Baker – “Sweet Love”",
+          "Ashford & Simpson – “Solid”",
+          "Baby Bash – “Cyclone” (feat. T-Pain)",
+          "Babyface – “Whip Appeal”",
+          "Barry White – “Your Sweetness Is My Weakness”",
+          "Blowfly – “The Vampire That Ate Miami”",
+          "Blu Cantrell – “Hit ‘Em up Style (Oops!)”",
+          "Bobby Brown – “Humpin’ Around”",
+          "Brandy – “Baby”",
+          "Brandy & Monica – “The Boy Is Mine”",
+          "Chingy – “Pullin’ Me Back” (feat. Tyrese)",
+          "Color Me Badd – “I Adore Mi Amor”",
+          "D’Angelo – “Lady”",
+          "Earth, Wind and Fire – “After the Love Has Gone”",
+          "Egyptian Lover – “I Need A Freak”",
+          "Faith Evans – “Love Like This”",
+          "Gregory Abbott – “Shake You Down”",
+          "Groove Theory – “Tell Me”",
+          "Jagged Edge – “Where The Party At” (feat. Nelly)",
+          "Jeremih – “Birthday Sex”",
+          "Jodeci – “Feenin'”",
+          "Jody Watley – “Looking For A New Love”",
+          "Joe – “Ride Wit U” (feat. G-Unit)",
+          "Keith Sweat – “Twisted”",
+          "Kleeer – “Intimate Connection”",
+          "LeVert – “Casanova”",
+          "Loose Ends – “Slow Down”",
+          "Liquid Wilson – “Come In Liquid City (Theme Song)” *",
+          "Liquid Wilson – “Finger Bang My Heart” *",
+          "Liquid Wilson – “Girl In Gloriana” *",
+          "Liquid Wilson – “Liquids Words of Wisdom” *",
+          "Liquid Wilson – “Oochie Coochie Man” *",
+          "Liquid Wilson – “Sex Specs” *",
+          "Liquid Wilson – “Sexification” *",
+          "Liquid Wilson – “Titties For Liquid” *",
+          "Mariah Carey – “Get Your Number” (feat. Jermaine Dupri)",
+          "Mariah Carey – “Vision of Love”",
+          "Mary J. Blige – “My Life”",
+          "Midnight Star – “Slow Jam”",
+          "Montell Jordan – “Get It On Tonite”",
+          "Next – “Too Close”",
+          "Parliament – “Handcuffs”",
+          "Portrait – “Here We Go Again!”",
+          "Pretty Ricky – “On the Hotline”",
+          "Rick James – “She Blew My Mind (69 Times)”",
+          "Rose Royce – “Love Don’t Live Here Anymore”",
+          "Silk – “Freak Me”",
+          "Sounds of Blackness – “Optimistic”",
+          "T-Pain – “Buy U a Drank (Shawty Snappin’)” (feat. Yung Joc)",
+          "T-Pain – “I’m N Luv (Wit a Stripper)” (feat. Mike Jones)",
+          "TLC – “Creep”",
+          "TLC – “What About Your Friends”",
+          "Toni Braxton – “Hit The Freeway” (feat. Loon)",
+          "Toni Braxton – “You’re Makin’ Me High”",
+          "Tony! Toni! Toné! – “Feels Good”",
+          "Total – “Can’t You See” (feat. The Notorious B.I.G.)",
+          "Usher – “Bad Girl”",
+          "Wayne Wonder – “No Letting Go”",
+          "Zhané – “Hey Mr. D.J.”"
+        ]
+      },
+      {
+        id: "back-country-radio",
+        name: "Back Country Radio",
+        freq: "94.3 FM",
+        genre: "Outlaw & Classic Country",
+        emoji: "🤠",
+        hosts: "MW (Morgan Wallen), Delta Dawne (Lana Del Rey) & Mud Dog Mike",
+        description: "MW and Delta Dawne blast renegade country music to the Grassrivers, Port Gellhorn, and beyond. Stay tuned for Back Country’s roving reporter, swamp meteorologist, and Delta’s not-so-secret lover Mud Dog Mike.",
+        tracks: [
+          "David Allan Coe – “Need a Little Time Off for Bad Behavior”",
+          "George Jones & Johnny Paycheck – “You Can Have Her”",
+          "George Strait – “The Fireman”",
+          "Glen Campbell – “Rhinestone Cowboy”",
+          "Hank Williams, Jr. – “A Country Boy Can Survive”",
+          "Hank Williams, Jr. – “I’ve Been Down”",
+          "Hank Williams, Jr. & Waylon Jennings – “The Conversation”",
+          "Jerry Reed – “When You’re Hot, You’re Hot”",
+          "Jessi Colter – “Is There Any Way (You’d Stay Forever)”",
+          "Joe Diffie – “Pickup Man”",
+          "Johnny Paycheck – “Someone to Give My Love To”",
+          "Loretta Lynn – “Don’t Come Home A-Drinkin’ (With Lovin’ on Your Mind)”",
+          "Mel McDaniel – “Louisiana Saturday Night”",
+          "Merle Haggard – “Stop The World And Let Me Off”",
+          "Morgan Wallen – “Last Thing You Need”",
+          "Rosanne Cash – “Tennessee Flat Top Box”",
+          "Tammy Wynette – “Talkin’ to Myself Again”",
+          "The Bellamy Brothers – “Let Your Love Flow”",
+          "The Judds – “Love Is Alive”",
+          "The Kentucky Headhunters – “Walk Softly on This Heart of Mine”",
+          "Tony Joe White – “Polk Salad Annie”",
+          "Waylon Jennings – “Gold Dust Woman”",
+          "Waylon Jennings – “Thanks to the Cathouse (I’m in the Doghouse with You)”",
+          "Waylon Jennings – “Waymore’s Blues”",
+          "Waylon Jennings & Willie Nelson – “Just to Satisfy You”"
+        ]
+      },
+      {
+        id: "circoloco-records",
+        name: "Circoloco Records Radio",
+        freq: "100.7 FM",
+        genre: "Underground House & Club",
+        emoji: "🎪",
+        hosts: "DJ Seth (Seth Troxler) & DJ Antonio (Antonio Carbonaro)",
+        description: "A dance music station associated with CircoLoco Records, the record label co-founded by Rockstar Games and the CircoLoco event brand in 2021.",
+        tracks: [
+          "Aline Umber & Krol – “Home Now” (feat. Tillmann Ostendarp) *",
+          "Aline Umber, Maxime dB – “Coming Back To Life” (feat. André Baum) *",
+          "ANOTR – “Silver Lines” (feat. Emily Warren)",
+          "Black Lounge – “Bickering (Max Dean Remix)” *",
+          "Carlita & Bakar – “Last Night” *",
+          "Chloé Caillet & Myd – “I Feel Love” *",
+          "Chris Stussy – “We On This Ride” *",
+          "DJ Tennis – “Never Look Back” (feat. Tomike) *",
+          "Jamback – “Positive”",
+          "Jimi Jules – “Don’t Break My Heart” *",
+          "Jimi Jules – “Turbo Rosso”",
+          "Larry Latenight – “Addicted” *",
+          "Map.ache – “ROCKMI”",
+          "Michael Bibi – “Rhythm of the Night” *",
+          "Michael Bibi, KETTAMA & Wu-Tang Clan – “Mystery of Raw” *",
+          "Mind Against – “Let It Go” *",
+          "PAWSA – “COLLECT THE COMMAS”",
+          "PAWSA & Fast Eddie – “Body Rock FM” *",
+          "Pional – “CeeSeeMe” *",
+          "Prospa – “This Rhythm” (feat. RAHH)",
+          "Prospa & Murda Beatz – “Baby”",
+          "Rampa – “The Church (DJ Lag & Palms Trax Remix)” *",
+          "Rossi & Demi – “Deep n Jvop” *",
+          "Seth Troxler – “Bootlicker” *",
+          "Skream – “Floral”",
+          "Skream & Jackmaster – “The Attention Deficit Track”",
+          "The Ghostbusters – “Clown”"
+        ]
+      },
+      {
+        id: "stockyard-fm",
+        name: "Stockyard FM",
+        freq: "91.5 FM",
+        genre: "Indie Dance & Electroclash",
+        emoji: "⚡",
+        hosts: "Harrison (The Dare) & Victoria (PinkPantheress)",
+        description: "An indie dance, electroclash, and electronic station spinning underground club hits and alternative dance tracks.",
+        tracks: [
+          "!!! – “All U Writers”",
+          "!!! – “Off the Grid” (feat. Meah Pace)",
+          "Alex Frankel – “Playa Rosa Theme”",
+          "ANOTR – “Paradise”",
+          "Caribou – “Never Come Back”",
+          "CMD/CTRL – “No Stress”",
+          "Digitalism – “Space Invaders”",
+          "Elderbrook & Bob Moses – “Inner Light”",
+          "Favored Nations – “There Is Only Us”",
+          "Fcukers – “Only One”",
+          "Fischerspooner – “Emerge”",
+          "Fred Jesse – “Bring Me Down”",
+          "GENER8ION & Yung Lean – “STORM I”",
+          "HEALTH – “NIGHTMARE”",
+          "Holy Ghost! – “Soon”",
+          "Hot Chip – “Hungry Child”",
+          "Justice & Tame Impala – “One Night/All Night”",
+          "Justice – “Afterimage” (feat. RIMON)",
+          "Kitty Ca$h, Thundercat & James Fauntleroy – “Time Machine”",
+          "LCD Soundsystem – “North American Scum”",
+          "Måneskin – “I WANNA BE YOUR SLAVE”",
+          "Mount Kimbie – “Monroe”",
+          "Nation of Language – “Across That Fine Line”",
+          "Neil Frances – “You Move Me”",
+          "Overmono – “Good Lies”",
+          "Overmono & Kindora – “Even Angels Ghost”",
+          "PinkPantheress – “Illegal”",
+          "Psychic Mirrors – “French Dip”",
+          "Róisín Murphy – “Overpowered”",
+          "Shygirl, Empress Of & Kingdom – “4eva”",
+          "Slayyyter – “internet $tar” *",
+          "The Dare – “Interesting”",
+          "Tommy Richman – “MILLION DOLLAR BABY”",
+          "underscores – “Do It”",
+          "Wet Leg & The Dare – “mangetout (The Dare Remix)”",
+          "WhoMadeWho & Rampa – “Abu Simbel”",
+          "Zimmer90 – “What Love Is”"
+        ]
+      },
+      {
+        id: "the-chamber",
+        name: "The Chamber 106.6",
+        freq: "106.6 FM",
+        genre: "Thrash & Heavy Metal",
+        emoji: "🤘",
+        hosts: "DJ Kerry (Kerry King), DJ Tom (Tom Araya) & Big Fan Brian",
+        description: "Crushing metal has landed in Leonida. Jump in the pit with The Chamber 106.6’s DJ Kerry and DJ Tom for classic metal from the ‘80s and beyond as they channel Leonida’s deep metal roots.",
+        tracks: [
+          "Anthrax – “I Am the Law”",
+          "Black Sabbath – “I”",
+          "Dio – “We Rock”",
+          "Exodus – “Bonded by Blood”",
+          "Flotsam and Jetsam – “Hammerhead”",
+          "Iron Maiden – “The Trooper”",
+          "Judas Priest – “Freewheel Burning”",
+          "Linkin Park – “In The End”",
+          "Mastodon – “Blood and Thunder”",
+          "Megadeth – “Symphony of Destruction”",
+          "Metallica – “Battery”",
+          "Metallica – “Master of Puppets”",
+          "Metallica – “Seek & Destroy”",
+          "Overkill – “Rotten to the Core”",
+          "Pantera – “I’m Broken”",
+          "Power Trip – “Mutual Death Warrant” *",
+          "Sepultura – “Territory”",
+          "Slayer – “Payback”",
+          "Slayer – “Raining Blood”",
+          "System of a Down – “Sugar”",
+          "Testament – “Over the Wall”",
+          "Tool – “Sober”",
+          "Venom – “Countess Bathory”",
+          "Voivod – “Panorama”"
+        ]
+      },
+      {
+        id: "radio-la-ola",
+        name: "Radio La Ola",
+        freq: "104.3 FM",
+        genre: "Salsa, Cuban & Merengue",
+        emoji: "💃",
+        hosts: "Emilio & Gloria Estefan",
+        description: "A station focused on classic Latin and Caribbean music, including salsa, Cuban music, and merengue.",
+        tracks: [
+          "Albita Rodríguez & Willy Chirino – “Que Viva Chango”",
+          "Banda Blanca – “Sopa de Caracol (Original Caribe Mix)”",
+          "Benny Moré – “Que Bueno Baila Usted”",
+          "Cachao – “Descarga Cubana”",
+          "Celia Cruz – “Bemba Colorá”",
+          "Celia Cruz, Justo Betancourt, Johnny Pacheco & Papo Lucca – “Besito de coco”",
+          "Charlie Palmieri – “La Hija De Lola”",
+          "Cheo Feliciano – “Anacaona”",
+          "El Gran Combo de Puerto Rico – “Brujeria”",
+          "El Gran Combo de Puerto Rico – “No Hay Cama Pa’ Tanta Gente”",
+          "Frankie Ruiz – “Tú Con Él”",
+          "Gloria Estefan – “Mi Tierra”",
+          "Hansel y Raúl – “Kuku-Cha Ku-Cha”",
+          "Héctor Lavoe – “Periódico de Ayer”",
+          "Joe Arroyo y La Verdad – “Rebelión (No Le Pegue a la Negra)”",
+          "José Luis Rodríguez – “Pavo Real”",
+          "Jossie Esteban & La Patrulla 15 – “El Tigueron”",
+          "Orquesta Harlow, Larry Harlow & Junior Gonzalez – “La Cartera”",
+          "Oscar D’León – “Llorarás”",
+          "Pete “El Conde” Rodríguez – “Catalina la O”",
+          "Roberto Torres – “Caballo Viejo”",
+          "Rubén Blades & Willie Colón – “Ligia Elena”",
+          "Wilfrido Vargas – “Abusadora”",
+          "Willie Colón & Rubén Blades – “Pedro Navaja”",
+          "Willy Chirino – “Soy Guajiro”"
+        ]
+      },
+      {
+        id: "worldwide-fm",
+        name: "Worldwide FM",
+        freq: "90.9 FM",
+        genre: "Global Beats, Soul & Jazz",
+        emoji: "🌐",
+        hosts: "Gilles Peterson",
+        description: "A returning station from Grand Theft Auto V and Grand Theft Auto Online, featuring jazz, soul, and music from around the world.",
+        tracks: [
+          "4hero – “Star Chasers”",
+          "Alewya – “Maktoub”",
+          "Atmos Blaq – “Skhaftin’ Saka Fonque”",
+          "Bobby Caldwell – “What You Won’t Do for Love”",
+          "Champion, BAKEY & Jamakabi – “International Man”",
+          "Change – “Hold Tight”",
+          "Chaz Jankel – “Glad To Know You (Todd Terje Re-Edit)”",
+          "Cloud One – “Atmosphere Strut”",
+          "Cristina Camargo – “Moral Tem Hora (Ray Mang Edit)”",
+          "D’Angelo – “Kamikazi” *",
+          "Digable Planets – “Rebirth of Slick (Cool Like Dat)”",
+          "DONGURIZU – “Yoppa Ratta”",
+          "Elements Of Life – “Love From The Sun (Louie Vega’s We Out Here Edit)” (feat. Rahsaan Patterson & Cindy Mizelle)",
+          "Facta – “SLoPE VIP” (feat. Warrior Queen & Killa P)",
+          "fejao & Samtheman – “Brasil da Capoeira”",
+          "Floating Points – “Del Oro”",
+          "Food Courts – “If There Are Health Food Stores, Then What Is Everything Else”",
+          "Garfield Fleming – “Don’t Send Me Away”",
+          "Gilles Peterson’s Havana Cultura Band – “Think Twice (4hero Remix)” (feat. Danay & Carina)",
+          "IZCO – “Japan Greatly” (feat. Reek0 & S.I)",
+          "Jan Hammer Group – “Don’t You Know”",
+          "Jamiroquai – “Smile”",
+          "Jazztronik – “SAMURAI (Samba House Remix)”",
+          "Jesse Johnson & DāM-FunK – “Stone Kold Krazy Luuv”",
+          "Kassa Overall – “REBIRTH OF SLICK (COOL LIKE DAT)”",
+          "Klash & Brown – “Yu Done Know (Jingle)”",
+          "Lil Simz & Obongjayar – “Lion”",
+          "Luis Antonio Diaz y Su Sol Banda – “Qué es lo que Hare para Amarte”",
+          "Mala & Magugu – “MILITANT DON”",
+          "Moses Ideka & phil – “Do It For You”",
+          "Mystery Tiime – “Thank You Deeply”",
+          "Narasimha – “Fanga”",
+          "Omar Apollo – “NO ME BUSQUES”",
+          "Queen Yahna – “Ain’t It Time”",
+          "Roberta Flack – “The First Time Ever I Saw Your Face”",
+          "Roy Ayers, Thundercat & Om’Mas Keith – “McDonalds Drug Money” *",
+          "Rupa – “Aaj Shanibar”",
+          "Srirajah Sound System – “Si Phan Don Lovers Rock” (feat. Molam Inteng Keawbuala)",
+          "Teena Marie – “I’m a Sucker For Your Love”",
+          "The Crusaders – “Free As The Wind”",
+          "ZENA – “MY LOVE YOUR LOVE”"
+        ]
+      },
+      {
+        id: "leonida-jazz",
+        name: "Leonida Jazz Radio",
+        freq: "89.5 FM",
+        genre: "Jazz Fusion & Virtuoso",
+        emoji: "🎷",
+        hosts: "DJ Randy (Randy Brecker), DJ Stanley (Stanley Clarke) & Yussef Dayes",
+        description: "A jazz station featuring jazz fusion and recordings by prominent instrumentalists.",
+        tracks: [
+          "Azymuth – “Águia não come mosca”",
+          "BADBADNOTGOOD & Randy Brecker – “Blowin’ Smoke”",
+          "Billy Cobham – “Crosswind”",
+          "Bob James – “Night Crawler”",
+          "Bob James & David Sanborn – “Maputo”",
+          "Casiopea – “Time Limit”",
+          "Dave Grusin – “Friends and Strangers”",
+          "Dave Grusin – “Modaji”",
+          "David Sanborn – “Breaking Point”",
+          "DOMi & JD BECK – “WHATUP”",
+          "Donny Hathaway – “Valdez in the Country”",
+          "Euge Groove – “Mr. Groove”",
+          "Fuse One – “Silk”",
+          "Grover Washington Jr. – “Mister Magic”",
+          "Herb Alpert – “Rotation”",
+          "Joe Armon-Jones – “Hotel Alphonso”",
+          "Kaidi Tatham – “Stro Kyat” (feat. Stro Elliot)",
+          "Kokoroko – “Tojo”",
+          "Marcus Miller – “Power”",
+          "Miles Davis – “Mystery”",
+          "Moses Boyd – “Rye Lane Shuffle”",
+          "Moses Yoofee Trio – “WHIP.wav”",
+          "Najee – “Betcha Don’t Know”",
+          "Placebo – “Humpty Dumpty”",
+          "Return to Forever – “Sorceress”",
+          "Ronnie Laws – “Always There”",
+          "Stanley Clarke – “Overtown Lights” (feat. Yussef Dayes & Robert Glasper)",
+          "Stanley Clarke – “School Days”",
+          "Stanley Clarke & George Duke – “Wild Dog”",
+          "The Brecker Brothers – “Funky Sea, Funky Dew”",
+          "The Brecker Brothers – “Scrunch”",
+          "The Kount & CARRTOONS – “On My Way”",
+          "Thundercat – “Fleer Ultra”",
+          "Tom Browne – “Forever More”",
+          "Venna, Yussef Dayes, Marco Bernardis & Rocco Palladino – “Sicily’ Box”",
+          "Weather Report – “Birdland”"
+        ]
+      },
+      {
+        id: "gloriana-blues",
+        name: "Gloriana Blues",
+        freq: "93.1 FM",
+        genre: "Historic & Modern Blues",
+        emoji: "🎸",
+        hosts: "DJ Buddy (Buddy Guy) & DJ Keith (Keith Richards)",
+        description: "A blues station playing historic and modern blues recordings.",
+        tracks: [
+          "Albert Collins – “Ice Pick”",
+          "B.B. King – “Chains and Things”",
+          "Big Mama Thornton – “Bumble Bee”",
+          "Bo Diddley – “I’m a Man”",
+          "Buddy Guy – “Stone Crazy”",
+          "Champion Jack Dupree – “One Scotch, One Bourbon, One Beer”",
+          "Earl Hooker – “Blue Guitar”",
+          "Ella Fitzgerald – “Trouble In Mind”",
+          "Freddie King – “Yonder Wall”",
+          "Howlin’ Wolf – “Smokestack Lightnin'”",
+          "Jimmie Rodgers – “That’s All Right”",
+          "John Lee Hooker – “Boogie Chillen'”",
+          "John Lee Hooker – “Dimples”",
+          "Junior Kimbrough – “Feels So Good #1”",
+          "Keith Richards – “Bright Lights, Big City”",
+          "Koko Taylor – “I Got What It Takes”",
+          "Lightnin’ Hopkins – “Back to New Orleans”",
+          "Lightnin’ Slim – “Hoodoo Blues”",
+          "Little Walter & Memphis Minnie – “Me and My Chauffeur Blues”",
+          "Muddy Waters – “Got My Mojo Working”",
+          "Sister Rosetta Tharpe, Marie Knight & Sam Price Trio – “Didn’t It Rain”",
+          "Slim Harpo – “Baby Scratch My Back”",
+          "Sonny Boy Williamson II – “Bring It On Home”"
+        ]
+      },
+      {
+        id: "radio-on-u",
+        name: "Radio On-U",
+        freq: "97.7 FM",
+        genre: "Roots Reggae & Dub",
+        emoji: "🦁",
+        hosts: "Adrian Sherwood",
+        description: "A reggae and dub station curated by legendary British producer Adrian Sherwood, featuring classic roots reggae, lovers rock, and heavy dub cuts.",
+        tracks: [
+          "Adrian Sherwood – “Dub Inspector”",
+          "Augustus Pablo – “Ras Menilik Congo – Harp”",
+          "Carroll Thompson – “I’m So Sorry”",
+          "Creation Rebel – “Frontline Dub”",
+          "Freddie McGregor – “Big Ship”",
+          "Gregory Isaacs – “Mr. Cop”",
+          "Horace Andy – “Skylarking”",
+          "Janet Kay – “Silly Games”",
+          "Jennifer Lara – “I Am In Love”",
+          "Ken Boothe – “Everything I Own”",
+          "King Jammy – “Under Me Sleng Teng Version”",
+          "Lee Perry & The Upsetters – “Black Panta”",
+          "Louisa Mark – “Caught You in a Lie”",
+          "Susan Cadogan – “Hurt So Good”",
+          "The Aggrovators, Linval Thompson, Bunny Lee & Prince Fatty – “Jah Jah Dub The Conqueror”",
+          "The Revolutionaries – “Ragnampaiza Version”"
+        ]
+      },
+      {
+        id: "kaleidoscope-fm",
+        name: "Kaleidoscope FM",
+        freq: "102.3 FM",
+        genre: "Eclectic & International Oddities",
+        emoji: "🔮",
+        hosts: "DJ Dicky (Jeremy Irons)",
+        description: "An eclectic station hosted by actor Jeremy Irons, featuring international music, unusual cover versions, and lesser-known recordings.",
+        tracks: [
+          "Alim Qasimov & Fargana Qasimova – “Say It Right”",
+          "Alkistis Protopsalti – “Ola Afta Pou Fovamai”",
+          "Brazil – “Tvoj Svijet”",
+          "Don Melody Club – “T’ Materiaal”",
+          "Fadoul – “Al Zman Saib”",
+          "George Lam – “Gan Ai Gan Zuo”",
+          "Heinz Rudolf Kunze – “Lola”",
+          "Kumbia Queers – “Kumbia Dark”",
+          "Laibach – “Geburt einer Nation”",
+          "Marianne Rosenberg – “Herz aus Glas”",
+          "Mexican Institute of Sound – “Sinfonía Agridulce”",
+          "Mona Carita – “Gloria”",
+          "Phuong Thanh – “Chia Tay Trong Mua”",
+          "Rolf Bergström & Pyhimykset – “Rokkibaby”",
+          "Ron – “Hai capito o no?”",
+          "Sylvie Vartan – “Danse ta vie”",
+          "Touré Kunda – “Nobel”",
+          "Trevor M. Simpson & Hi Lo Singers – “Stupid Girl”",
+          "Wim Damri – “Ies Manziel”"
+        ]
+      },
+      {
+        id: "symphony-fm",
+        name: "Symphony FM",
+        freq: "88.9 FM",
+        genre: "Classical & Orchestral",
+        emoji: "🎻",
+        hosts: "Yuja (Yuja Wang)",
+        description: "A classical music station featuring orchestral works and compositions from several historical periods.",
+        tracks: [
+          "Claude Debussy – “Nocturnes, L. 91: II. Fêtes”",
+          "Dmitri Shostakovich – “Symphony No. 5 in D Minor”",
+          "Franz Liszt – “Les Préludes”",
+          "Franz Liszt – “Les preludes, S. 97”",
+          "Franz Schubert – “Erlkönig, Op. 1, D. 328”",
+          "George Frideric Handel – “Messiah”",
+          "Gustav Mahler – “Symphony No. 6: Allegro energico”",
+          "Jean Sibelius – “Symphony No. 5 in E-Flat Major”",
+          "Jean Sibelius – “Symphony No. 5: III. Allegro molto”",
+          "Johann Sebastian Bach – “Mass in B Minor”",
+          "Johannes Brahms – “Symphony No. 3 in F Major”",
+          "Leoš Janáček – “Sinfonietta JW V1.18: V. Allegro”",
+          "Ludwig van Beethoven – “Symphony No. 7 in A Major”",
+          "Maurice Ravel – “La valse, M. 72”",
+          "Pjotr Iljitsch Tschaikowski – “Symphony No. 5 in E Minor”",
+          "Sergei Prokofiev – “Piano Concerto No. 2”",
+          "Sergej Prokofiev – “Piano Concerto No. 2 in G Minor”",
+          "Witold Lutosławski – “Concerto for Orchestra”",
+          "Wolfgang Amadeus Mozart – “Sinfonia concertante for Violin and Viola in E-Flat Major”"
+        ]
+      },
+      {
+        id: "sniper-la-perle",
+        name: "The Sniper of La Perle",
+        freq: "SECRET",
+        genre: "Haitian Kompa & Rabòday",
+        emoji: "🎯",
+        isSecret: true,
+        hosts: "Kodak Black & Michaël Brun",
+        description: "A secret station hosted by Kodak Black and presented by Michaël Brun, featuring Haitian kompa, rabòday, and diasporic club tracks.",
+        tracks: [
+          "5Lan – “Kanpe devan’m” (feat. TonyMix)",
+          "Alan Cavé – “Chokola”",
+          "Barikad Crew – “Ou Paka Gangster”",
+          "Billy Blue – “Fresh From Head To Toe”",
+          "Black Dada – “Imma Zoe”",
+          "Carimi – “Are You Ready”",
+          "DJ Platinum D – “Ou Pa Ka Fè Sa”",
+          "Djakout – “La Familia”",
+          "Emeline Michel – “Flanm”",
+          "John Wicks – “Haiti” (feat. Kodak Black)",
+          "King Posse – “Koul Non”",
+          "Kodak Black – “300 Blackout”",
+          "Kodak Black – “Haitian Scarface”",
+          "Kodak Black & Michaël Brun – “Tèt Kale Bobis”",
+          "Michaël Brun, J Balvin, SAINt JHN, Charly Black & J Perry – “Jessica”",
+          "Naïka – “6:45”",
+          "R Dydy – “Magic Gouyad #6”",
+          "Roody Roodboy – “Tranble”",
+          "Top Adlerman – “Ville”",
+          "T-Vice – “Tu Me Touches”",
+          "Wyclef Jean – “Guantanamera” (feat. Ms. Lauryn Hill, Celia Cruz & Jeni Fujita)",
+          "Zenglen – “Child Support”"
+        ]
+      },
+      {
+        id: "the-vault-radio",
+        name: "The Vault Radio",
+        freq: "SECRET",
+        genre: "Vice City Nightclub & Rave",
+        emoji: "🎭",
+        isSecret: true,
+        hosts: "DJ Pretzel",
+        description: "The Vault Radio is a secret radio station featuring dance, electronic music, and rave mixes played inside The Vault Nightclub in Vice City. Unlocked by scanning the pink gas mask poster.",
+        tracks: [
+          "Adana Twins – “My Computer” (feat. Glowal)",
+          "Âme – “Rej”",
+          "Argoman – “Chimicalissimo”",
+          "Barry Can’t Swim – “Return to Bhibo” *",
+          "Bob Moses – “Nothing But You (DJ Tennis Remix)”",
+          "Cajmere – “Brighter Days (Marco Lys Remix)” (feat. Dajae)",
+          "Daphni – “Ye Ye”",
+          "DJ Koze – “XTC”",
+          "Dom Dolla & Solomun – “Damn”",
+          "Four Tet – “Baby (Tony Romera Remix)”",
+          "Jaden Thompson & Rampa – “Personal” (feat. Nafe Smallz)",
+          "Jimi Jules & Black Coffee – “Trippy Yeah”",
+          "Junior Jack, Tube & Berger – “E Samba 2018”",
+          "KETTAMA & CHRIS STASSY – “Don’t Play Around” *",
+          "Lana Del Rey – “West Coast (Solomun Remix)”",
+          "Michael Bibi & KinAhau – “Different Side” (feat. Audio Bullys)",
+          "Notre Dame – “Yumi”",
+          "PAWSA – “PICK UP THE PHONE” (feat. Nate Dogg)",
+          "Pryda – “Armed”",
+          "Real Dimez – “FTH (PAWSA Remix)” *",
+          "Renato Cohen – “Bismuth”",
+          "Róisín Murphy – “Simulation (Mano Le Tough Remix)”",
+          "SG Lewis & DJ Seinfeld – “Simple Times”",
+          "Skream & FLETCH – “Lost Without You”"
+        ]
+      },
+      {
+        id: "additional-music",
+        name: "Additional & In-Game Artists",
+        freq: "OST / VIP",
+        genre: "Real Dimez, DWNPLY & Missions",
+        emoji: "🎬",
+        isSecret: true,
+        hosts: "Real Dimez & DWNPLY (Denzel Curry)",
+        description: "Original songs performed by in-game artists Real Dimez and DWNPLY (voiced by Denzel Curry), alongside licensed and original tracks featured in missions, cutscenes, and nightlife venues across Leonida.",
+        tracks: [
+          "Real Dimez – “Cooties” *",
+          "Real Dimez – “Cooties (Remix)” (feat. Sexyy Red) *",
+          "Real Dimez – “FTH” *",
+          "Real Dimez – “Money Don’t Lie” *",
+          "Real Dimez – “Vibin’ With The Dimez” *",
+          "DWNPLY – “Bulletproof Ski Mask” (feat. Real Dimez) *",
+          "DWNPLY – “Pax” *",
+          "DWNPLY – “Politik” *",
+          "100 Gecs – “Sensimilla” *",
+          "Carly Rae Jepsen – “Run Away With Me (Overmono Pegassi Mix)”",
+          "Diplo & MAG – “Come Down To Vice City”",
+          "Force M.D.’s – “Itchin’ for a Scratch”",
+          "Jimmy Spicer – “The Bubble Bunch”",
+          "Korn – “Freak on a Leash”",
+          "Linkin Park – “In the End”",
+          "Pyotr Ilyich Tchaikovsky – “Piano Concerto No. 1 in B-Flat Minor, Op. 23”",
+          "Samuel Barber – “Adagio for Strings, Op. 11”",
+          "Taylor Felt – “Secret”",
+          "The Dubliners – “The Auld Triangle”",
+          "Tokischa – “DROGA DE DISEÑADOR (Honey Dijon Remix)”",
+          "Travis Scott – “Burn This Shit Down” *",
+          "War – “Low Rider”"
+        ]
+      },
+      {
+        id: "the-wipe",
+        name: "The Wipe",
+        freq: "107.1 AM",
+        genre: "Talk Radio & Satire",
+        emoji: "🧻",
+        isTalk: true,
+        hosts: "Leonida Local Broadcasters",
+        description: "The Wipe is a talk station focusing on satire and the unusual events and characters of Leonida. Its broadcasts include references to local stories and events throughout the state.",
+        tracks: []
+      },
+      {
+        id: "wktt",
+        name: "WKTT (We Know The Truth)",
+        freq: "108.5 AM",
+        genre: "Conservative Talk Satire",
+        emoji: "🦅",
+        isTalk: true,
+        hosts: "Richard Bastion (The Richard Bastion Show)",
+        description: "WKTT (We Know the Truth) returns from Grand Theft Auto IV. The conservative talk radio station features political and social satire, including call-in programming.",
+        tracks: []
+      }
+    ];
+
+    // =========================================================================
+    // STATE & STORAGE MANAGEMENT
+    // =========================================================================
+    let activeIndex = 0;
+    let isGridView = false;
+    let isMuted = false;
+    let customLinks = {};
+    const STORAGE_KEY = "gta6_radio_custom_links_v1";
+
+    // Load saved custom YouTube Music URLs from localStorage
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) customLinks = JSON.parse(saved);
+    } catch (e) {
+      console.warn("Could not read localStorage:", e);
+    }
+
+    // =========================================================================
+    // WEB AUDIO API: SYNTHESIZED RADIO STATIC & DIAL CLICK SFX
+    // =========================================================================
+    let audioCtx = null;
+
+    function playRadioClickSFX() {
+      if (isMuted) return;
+      try {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        const now = audioCtx.currentTime;
+
+        // 1. Short crisp mechanical dial click
+        const osc = audioCtx.createOscillator();
+        const clickGain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.035);
+
+        clickGain.gain.setValueAtTime(0.14, now);
+        clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+
+        osc.connect(clickGain);
+        clickGain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+
+        // 2. Brief analog FM static burst (65ms)
+        const bufferSize = Math.floor(audioCtx.sampleRate * 0.065);
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.45));
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = "bandpass";
+        filter.frequency.value = 1800;
+        filter.Q.value = 1.4;
+
+        const staticGain = audioCtx.createGain();
+        staticGain.gain.setValueAtTime(0.08, now);
+        staticGain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+
+        noise.connect(filter);
+        filter.connect(staticGain);
+        staticGain.connect(audioCtx.destination);
+        noise.start(now);
+      } catch (err) {
+        // Ignore audio errors on restricted browsers
+      }
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      document.getElementById("muteIcon").textContent = isMuted ? "🔇" : "🔊";
+      showToast(isMuted ? "🔇" : "🔊", isMuted ? "Radio SFX Muted" : "Radio SFX Enabled");
+    }
+
+    // =========================================================================
+    // INITIALIZE & RENDER RADIAL WHEEL + GRID
+    // =========================================================================
+    function buildWheelNodes() {
+      const container = document.getElementById("wheelNodesContainer");
+      container.innerHTML = "";
+      const total = STATIONS.length;
+      const radiusPercent = 43.5; // Percentage from center of wheel-stage
+
+      STATIONS.forEach((station, idx) => {
+        // Start at top (-90 deg) and go clockwise
+        const angleDeg = (idx / total) * 360 - 90;
+        const angleRad = (angleDeg * Math.PI) / 180;
+        const leftPct = 50 + radiusPercent * Math.cos(angleRad);
+        const topPct = 50 + radiusPercent * Math.sin(angleRad);
+
+        const node = document.createElement("button");
+        node.type = "button";
+        node.className = "station-node" + (idx === activeIndex ? " active" : "");
+        node.style.left = `${leftPct}%`;
+        node.style.top = `${topPct}%`;
+        node.dataset.index = idx;
+        node.setAttribute("aria-label", station.name);
+        node.title = `${station.name} (${station.genre})`;
+        node.innerHTML = `<span>${station.emoji}</span>`;
+
+        node.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectStation(idx, true);
+        });
+
+        container.appendChild(node);
+      });
+    }
+
+    function buildGridCards() {
+      const grid = document.getElementById("stationGridContainer");
+      grid.innerHTML = "";
+
+      STATIONS.forEach((station, idx) => {
+        const isActive = idx === activeIndex;
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `text-left p-3 rounded-2xl border transition flex items-center gap-2.5 cursor-pointer ${
+          isActive
+            ? "bg-gradient-to-br from-pink-600/35 to-purple-900/50 border-cyan-400 shadow-[0_0_20px_rgba(255,42,133,0.3)]"
+            : "bg-white/5 hover:bg-white/10 border-white/10"
+        }`;
+        card.onclick = () => selectStation(idx, true);
+
+        card.innerHTML = `
+          <div class="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center text-xl shrink-0">
+            ${station.emoji}
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1">
+              <span class="text-[9px] font-vice font-bold text-cyan-300 truncate">${station.freq}</span>
+            </div>
+            <p class="font-bold text-xs text-white truncate">${station.name}</p>
+            <p class="text-[10px] text-slate-400 truncate">${station.isTalk ? "Talk Radio" : station.tracks.length + " songs"}</p>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Touch / Mouse Drag-to-Tune on the Wheel
+    function setupWheelDrag() {
+      const stage = document.getElementById("wheelStage");
+      let isDragging = false;
+
+      function tuneFromPointer(clientX, clientY) {
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = clientX - cx;
+        const dy = clientY - cy;
+        const dist = Math.hypot(dx, dy);
+
+        // Ignore touches right in the dead center medallion
+        if (dist < rect.width * 0.18) return;
+
+        // Calculate angle clockwise from 12 o'clock (-90 deg)
+        let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+        if (angle < 0) angle += 360;
+
+        const slice = 360 / STATIONS.length;
+        const newIdx = Math.round(angle / slice) % STATIONS.length;
+        if (newIdx !== activeIndex) {
+          selectStation(newIdx, true);
+        }
+      }
+
+      stage.addEventListener("pointerdown", (e) => {
+        isDragging = true;
+        tuneFromPointer(e.clientX, e.clientY);
+      });
+
+      window.addEventListener("pointermove", (e) => {
+        if (!isDragging) return;
+        tuneFromPointer(e.clientX, e.clientY);
+      });
+
+      window.addEventListener("pointerup", () => {
+        isDragging = false;
+      });
+    }
+
+    // =========================================================================
+    // STATION SELECTION & UI UPDATES
+    // =========================================================================
+    function selectStation(index, withSound = false) {
+      activeIndex = (index + STATIONS.length) % STATIONS.length;
+      const station = STATIONS[activeIndex];
+
+      if (withSound) {
+        playRadioClickSFX();
+      }
+
+      // Update Wheel Nodes Active State
+      document.querySelectorAll(".station-node").forEach((node, idx) => {
+        node.classList.toggle("active", idx === activeIndex);
+      });
+
+      // Update Center Medallion
+      document.getElementById("centerFreq").textContent = station.freq;
+      document.getElementById("centerEmoji").textContent = station.emoji;
+      document.getElementById("centerName").textContent = station.name.toUpperCase();
+      document.getElementById("centerCount").textContent = station.isTalk
+        ? "TALK RADIO"
+        : `${station.tracks.length} TRACKS`;
+
+      const centerTag = document.getElementById("centerTag");
+      if (station.isSecret) {
+        centerTag.classList.remove("hidden");
+      } else {
+        centerTag.classList.add("hidden");
+      }
+
+      // Update Station HUD Console
+      document.getElementById("hudBadge").textContent = station.genre.toUpperCase();
+      document.getElementById("hudTitle").textContent = station.name;
+      document.getElementById("hudHosts").textContent = `🎙️ Hosts: ${station.hosts}`;
+      document.getElementById("hudDesc").textContent = station.description;
+      document.getElementById("hudEmojiBox").textContent = station.emoji;
+
+      const hudSpecialTag = document.getElementById("hudSpecialTag");
+      hudSpecialTag.classList.toggle("hidden", !station.isSecret);
+
+      const hasCustom = Boolean(customLinks[station.id]);
+      document.getElementById("hudCustomLinked").classList.toggle("hidden", !hasCustom);
+
+      const primaryBtnLabel = document.getElementById("primaryBtnLabel");
+      const randomTrackBtn = document.getElementById("randomTrackBtn");
+      const tracklistSection = document.getElementById("tracklistSection");
+
+      if (station.isTalk) {
+        primaryBtnLabel.textContent = `Search "${station.name}" on YouTube`;
+        randomTrackBtn.classList.add("hidden");
+        tracklistSection.classList.add("hidden");
+      } else {
+        primaryBtnLabel.textContent = hasCustom
+          ? "Open Your Custom YouTube Music Playlist"
+          : "Play Station on YouTube Music";
+        randomTrackBtn.classList.remove("hidden");
+        tracklistSection.classList.remove("hidden");
+      }
+
+      // Clear search box and re-render tracklist
+      document.getElementById("trackSearchInput").value = "";
+      renderTracklist();
+
+      // Update grid highlight if open
+      if (isGridView) buildGridCards();
+    }
+
+    function stepStation(delta) {
+      selectStation(activeIndex + delta, true);
+    }
+
+    function toggleViewMode() {
+      isGridView = !isGridView;
+      const wheelSection = document.getElementById("wheelSection");
+      const gridSection = document.getElementById("gridSection");
+      const viewIcon = document.getElementById("viewIcon");
+      const viewLabel = document.getElementById("viewLabel");
+
+      if (isGridView) {
+        wheelSection.classList.add("hidden");
+        gridSection.classList.remove("hidden");
+        viewIcon.textContent = "🎡";
+        viewLabel.textContent = "Wheel View";
+        buildGridCards();
+      } else {
+        gridSection.classList.add("hidden");
+        wheelSection.classList.remove("hidden");
+        viewIcon.textContent = "🎛️";
+        viewLabel.textContent = "Grid View";
+      }
+    }
+
+    // =========================================================================
+    // TRACKLIST RENDERING & YOUTUBE MUSIC LAUNCHERS
+    // =========================================================================
+    function parseTrackString(raw) {
+      const isUnreleased = raw.endsWith("*");
+      const cleaned = raw.replace(/\*$/, "").trim();
+      const parts = cleaned.split(" – ");
+      const artist = parts[0] || "";
+      const title = (parts[1] || cleaned).replace(/^[“"]|[”"]$/g, "");
+      return { artist, title, isUnreleased, fullClean: `${artist} - ${title}` };
+    }
+
+    function renderTracklist() {
+      const station = STATIONS[activeIndex];
+      const container = document.getElementById("tracklistContainer");
+      const countBadge = document.getElementById("tracklistCountBadge");
+      const query = document.getElementById("trackSearchInput").value.trim().toLowerCase();
+
+      if (station.isTalk) {
+        container.innerHTML = "";
+        return;
+      }
+
+      const filtered = station.tracks
+        .map((raw, i) => ({ ...parseTrackString(raw), num: i + 1 }))
+        .filter(
+          (t) =>
+            !query ||
+            t.artist.toLowerCase().includes(query) ||
+            t.title.toLowerCase().includes(query)
+        );
+
+      countBadge.textContent = `${filtered.length} / ${station.tracks.length}`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-400">
+            No tracks matching "${query}" on ${station.name}.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map(
+          (track) => `
+          <button
+            type="button"
+            onclick='openSongOnYTMusic(${JSON.stringify(track.artist)}, ${JSON.stringify(track.title)})'
+            class="w-full text-left py-2.5 px-2.5 rounded-xl hover:bg-white/10 active:bg-pink-500/20 transition flex items-center justify-between gap-3 group cursor-pointer"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="text-[11px] font-mono text-slate-500 w-5 text-right shrink-0">${track.num}</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <p class="text-xs sm:text-sm font-semibold text-white group-hover:text-cyan-300 transition truncate">${track.title}</p>
+                  ${
+                    track.isUnreleased
+                      ? `<span class="text-[9px] font-bold uppercase px-1.5 py-0.2 rounded bg-pink-500/20 text-pink-300 border border-pink-500/30 shrink-0">Radio Exclusive</span>`
+                      : ""
+                  }
+                </div>
+                <p class="text-[11px] text-slate-400 truncate">${track.artist}</p>
+              </div>
+            </div>
+            <span class="w-8 h-8 rounded-full bg-white/5 group-hover:bg-pink-500 text-slate-300 group-hover:text-white flex items-center justify-center text-xs shrink-0 transition">
+              ▶
+            </span>
+          </button>
+        `
+        )
+        .join("");
+    }
+
+    function openStationOnYTMusic() {
+      const station = STATIONS[activeIndex];
+      const customUrl = customLinks[station.id];
+
+      if (customUrl && customUrl.startsWith("http")) {
+        showToast("🚀", `Opening your ${station.name} playlist...`);
+        window.open(customUrl, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      if (station.isTalk) {
+        const q = encodeURIComponent(`GTA 6 ${station.name} radio`);
+        showToast("📻", `Searching ${station.name} on YouTube...`);
+        window.open(`https://www.youtube.com/results?search_query=${q}`, "_blank", "noopener,noreferrer");
+        return;
+      }
+
+      const q = encodeURIComponent(`GTA 6 ${station.name} Playlist`);
+      showToast("🎵", `Launching ${station.name} on YouTube Music...`);
+      window.open(`https://music.youtube.com/search?q=${q}`, "_blank", "noopener,noreferrer");
+    }
+
+    function playRandomTrackOnYTMusic() {
+      const station = STATIONS[activeIndex];
+      if (!station.tracks || station.tracks.length === 0) return;
+
+      // Prefer released tracks for instant YouTube Music matches, fallback to all
+      const releasedTracks = station.tracks.filter((t) => !t.endsWith("*"));
+      const pool = releasedTracks.length > 0 ? releasedTracks : station.tracks;
+      const randomRaw = pool[Math.floor(Math.random() * pool.length)];
+      const parsed = parseTrackString(randomRaw);
+
+      openSongOnYTMusic(parsed.artist, parsed.title);
+    }
+
+    function openSongOnYTMusic(artist, title) {
+      const q = encodeURIComponent(`${artist} ${title}`);
+      showToast("▶️", `Playing "${title}" by ${artist}`);
+      window.open(`https://music.youtube.com/search?q=${q}`, "_blank", "noopener,noreferrer");
+    }
+
+    // =========================================================================
+    // CUSTOM PLAYLIST LINKS SETTINGS MODAL
+    // =========================================================================
+    function openSettings() {
+      const container = document.getElementById("settingsListContainer");
+      container.innerHTML = STATIONS.map(
+        (station) => `
+        <div class="bg-black/35 border border-white/10 rounded-2xl p-3 space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="link-input-${station.id}" class="text-xs font-bold text-white flex items-center gap-1.5">
+              <span>${station.emoji}</span>
+              <span>${station.name}</span>
+            </label>
+            <span class="text-[10px] text-slate-400">${station.freq}</span>
+          </div>
+          <input
+            type="url"
+            id="link-input-${station.id}"
+            value="${customLinks[station.id] || ""}"
+            placeholder="https://music.youtube.com/playlist?list=..."
+            class="w-full bg-black/50 border border-white/15 focus:border-cyan-400 rounded-xl px-3 py-2 text-xs text-cyan-200 placeholder-slate-500 outline-none"
+          />
+        </div>
+      `
+      ).join("");
+
+      document.getElementById("settingsModal").classList.remove("hidden");
+    }
+
+    function closeSettings() {
+      document.getElementById("settingsModal").classList.add("hidden");
+    }
+
+    function saveCustomLinks() {
+      const updated = {};
+      STATIONS.forEach((station) => {
+        const input = document.getElementById(`link-input-${station.id}`);
+        if (input && input.value.trim()) {
+          updated[station.id] = input.value.trim();
+        }
+      });
+
+      customLinks = updated;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(customLinks));
+      } catch (e) {
+        console.warn("Storage save failed:", e);
+      }
+
+      updateCustomBadgeDot();
+      selectStation(activeIndex, false);
+      closeSettings();
+      showToast("✅", "Saved custom playlist links!");
+    }
+
+    function clearAllCustomLinks() {
+      STATIONS.forEach((station) => {
+        const input = document.getElementById(`link-input-${station.id}`);
+        if (input) input.value = "";
+      });
+    }
+
+    function updateCustomBadgeDot() {
+      const hasAny = Object.keys(customLinks).length > 0;
+      document.getElementById("customBadgeDot").classList.toggle("hidden", !hasAny);
+    }
+
+    // =========================================================================
+    // TOAST HELPER & KEYBOARD NAVIGATION
+    // =========================================================================
+    let toastTimer = null;
+    function showToast(icon, text) {
+      const banner = document.getElementById("toastBanner");
+      document.getElementById("toastIcon").textContent = icon;
+      document.getElementById("toastText").textContent = text;
+      banner.classList.remove("hidden");
+
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        banner.classList.add("hidden");
+      }, 2800);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      if (document.activeElement.tagName === "INPUT") return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        stepStation(1);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        stepStation(-1);
+      }
+    });
+
+    // =========================================================================
+    // BOOT APP
+    // =========================================================================
+    window.addEventListener("DOMContentLoaded", () => {
+      buildWheelNodes();
+      setupWheelDrag();
+      updateCustomBadgeDot();
+      selectStation(0, false);
+    });
+  </script>
+</body>
+</html>
